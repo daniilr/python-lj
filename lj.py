@@ -613,7 +613,7 @@ class LJServer:
 
         LJ encourages you to cache this data, but it can change occasionally.
         """
-        response = self.__request_with_cookie(host+"export_comments.bml?get=comment_meta&startid=%d" % int(startid), session)
+        response = self.__request_with_cookie(self.host+"export_comments.bml?get=comment_meta&startid=%d" % int(startid), session)
         d = parse(response).getElementsByTagName('livejournal')[0]
         response.close()
         
@@ -651,7 +651,7 @@ class LJServer:
 
         This should be very, very cached.  All information that might change is returned by fetch_comment_meta.
         """
-        response = self.__request_with_cookie(host+"export_comments.bml?get=comment_body&startid=%d" % int(startid), session)
+        response = self.__request_with_cookie(self.host+"export_comments.bml?get=comment_body&startid=%d" % int(startid), session)
         d = parse(response).getElementsByTagName('livejournal')[0]
         response.close()
         
