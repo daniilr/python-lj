@@ -15,7 +15,7 @@ __date__ = "$Date: 2004/11/30 10:43:00 PST $"
 __copyright__ = "Copyright (c) 2004-2007 David Lynch"
 __license__ = "New BSD"
 
-import xmlrpclib, urllib2
+import xmlrpclib, urllib2, StringIO, gzip
 import md5, os, datetime
 from xml.dom.minidom import parse, parseString
 
@@ -582,13 +582,15 @@ class LJServer:
             session = self.sessiongenerate()
 
         request = urllib2.Request(url)
+        request.add_header('Accept-encoding', 'gzip')
         request.add_header('User-agent', self.user_agent)
         request.add_header('Cookie', 'ljsession='+session)
-        return urllib2.urlopen(request)
-        #f = urllib2.urlopen(request)
-        #data = f.read()
-        #f.close()
-        #return data
+        response = urllib2.urlopen(request)
+        data = StringIO.StringIO(response.read())
+        response.close()
+        if response.headers.get('content-encoding', '') == 'gzip':
+            data = gzip.GzipFile(fileobj=data)
+        return data
 
     def fetch_comment_meta(self, startid = 0, session = None):
         """Fetch comment metadata
