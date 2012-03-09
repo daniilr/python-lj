@@ -103,6 +103,8 @@ def update_journal_entries(server, journal):
         print "getting entries starting at", syncitems[0][1]
         sync = server.getevents_syncitems(one_second_before(syncitems[0][1]))
         for entry in sync['events']:
+            if hasattr(entry, 'data'):
+                entry = entry.data
             journal['entries'][entry['itemid']] = entry
             del(syncitems[0])
     return howmany
@@ -125,6 +127,9 @@ def update_journal_comments(server, journal):
     session = server.sessiongenerate()
     initial_meta = get_meta_since(journal['last_comment'], server, session)
     journal['comment_posters'].update(initial_meta['usermaps'])
+    if initial_meta['maxid'] > journal['last_comment']:
+        bodies = get_bodies_since(journal['last_comment'], initial_meta['maxid'], server, session)
+        journal['comments'].update(bodies)
     if len(journal['comments']) == 0 or days_ago(journal['last_comment_meta']) > 30:
         #update metadata every 30 days
         all_meta = get_meta_since(u'0', server, session)
@@ -134,9 +139,6 @@ def update_journal_comments(server, journal):
                 journal['comments'][id]['posterid'] = data[0]
                 journal['comments'][id]['state'] = data[1]
         journal['last_comment_meta'] = str(datetime.datetime.today())
-    if initial_meta['maxid'] > journal['last_comment']:
-        bodies = get_bodies_since(journal['last_comment'], initial_meta['maxid'], server, session)
-        journal['comments'].update(bodies)
     howmany = int(initial_meta['maxid']) - int(journal['last_comment'])
     journal['last_comment'] = initial_meta['maxid']
     server.sessionexpire(session)
@@ -169,7 +171,7 @@ def get_bodies_since(highest, maxid, server, session):
         print "Downloaded %d comments so far" % len(all)
     return all
 
-def dispatch():
+def __dispatch():
     parser = OptionParser(version="%%prog %s" % __revision__, usage = "usage: %prog -u Username -p Password -f backup.pkl")
     parser.add_option('-u', dest='user', help="Username")
     parser.add_option('-p', dest='password', help="Password")
@@ -190,4 +192,4 @@ def dispatch():
         parser.error("If a config file is not being used, -u, -p, and -f must all be present.")
 
 if __name__ == "__main__":
-    dispatch()
+    __dispatch()
