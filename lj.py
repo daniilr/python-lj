@@ -15,8 +15,9 @@ __date__ = "$Date: 2004/11/30 10:43:00 PST $"
 __copyright__ = "Copyright (c) 2004-2007 David Lynch"
 __license__ = "New BSD"
 
+from hashlib import md5
 import xmlrpclib, urllib2, StringIO, gzip
-import md5, os, datetime
+import os, datetime
 from xml.dom.minidom import parse, parseString
 
 class LJException(Exception):
@@ -79,7 +80,7 @@ class LJServer:
                 'clientversion': self.clientversion,
                 'auth_method': 'challenge',
                 'auth_challenge': challenge['challenge'],
-                'auth_response': md5.new(challenge['challenge'] + md5.new(self.password).hexdigest()).hexdigest(),
+                'auth_response': md5(challenge['challenge'] + md5(self.password).hexdigest()).hexdigest(),
                 'username': self.user,
                 }
         
