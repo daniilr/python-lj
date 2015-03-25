@@ -1,4 +1,6 @@
 # Python LiveJournal #
+**Feel free to make pull requests!**
+
 **A python realization of LiveJournal (LJ) API**
 A full description of the protocol can be found at: 
 http://www.livejournal.com/doc/server/ljp.csp.xml-rpc.protocol.html
