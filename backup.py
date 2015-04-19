@@ -2,13 +2,13 @@
 
 __revision__ = "$Rev$"
 
-import ConfigParser
-import cPickle
+import configparser
+import pickle
 import datetime
 import os.path
 import sys
 from optparse import OptionParser
-import lj
+from . import lj
 
 """
 journal backup dictionary structure:
@@ -58,7 +58,7 @@ def backup(u,p,f):
     server = lj.LJServer('lj.py+backup; kemayo@gmail.com', 'Python-lj.py/0.0.1')
     try:
         login = server.login(u, p, getpickws = True, getpickwurls = True)
-    except lj.LJException, e:
+    except lj.LJException as e:
         sys.exit(e)
     
     # Load already-cached entries
@@ -67,23 +67,23 @@ def backup(u,p,f):
     journal['login'] = login
 
     # Sync entries from the server
-    print "Downloading journal entries"
+    print("Downloading journal entries")
     nj = update_journal_entries(server, journal)
 
     # Sync comments from the server
-    print "Downloading comments"
+    print("Downloading comments")
     nc = update_journal_comments(server, journal)
     
     save_journal(f, journal)
 
-    print("Updated %d entries and %d comments" % (nj, nc))
+    print(("Updated %d entries and %d comments" % (nj, nc)))
 
 def load_journal(f):
     #f should be a string referring to a file
     if os.path.exists(f):
         try:
             pickled = open(f, 'rb')
-            j = cPickle.load(pickled)
+            j = pickle.load(pickled)
             pickled.close()
             return j
         except EOFError:
@@ -92,15 +92,15 @@ def load_journal(f):
 
 def save_journal(f, journal):
     pickled = open(f, 'wb')
-    cPickle.dump(journal, pickled)
+    pickle.dump(journal, pickled)
     pickled.close()
 
 def update_journal_entries(server, journal):
     syncitems = built_syncitems_list(server, journal)
     howmany = len(syncitems)
-    print howmany, "entries to download"
+    print(howmany, "entries to download")
     while(len(syncitems) > 0):
-        print "getting entries starting at", syncitems[0][1]
+        print("getting entries starting at", syncitems[0][1])
         sync = server.getevents_syncitems(one_second_before(syncitems[0][1]))
         for entry in sync['events']:
             if hasattr(entry, 'data'):
@@ -132,10 +132,10 @@ def update_journal_comments(server, journal):
         journal['comments'].update(bodies)
     if len(journal['comments']) == 0 or days_ago(journal['last_comment_meta']) > 30:
         #update metadata every 30 days
-        all_meta = get_meta_since(u'0', server, session)
+        all_meta = get_meta_since('0', server, session)
         journal['comment_posters'].update(all_meta['usermaps'])
         if len(journal['comments']) > 0:
-            for id,data in all_meta['comments'].items():
+            for id,data in list(all_meta['comments'].items()):
                 journal['comments'][id]['posterid'] = data[0]
                 journal['comments'][id]['state'] = data[1]
         journal['last_comment_meta'] = str(datetime.datetime.today())
@@ -150,7 +150,7 @@ def get_meta_since(highest, server, session):
     while highest < maxid:
         meta = server.fetch_comment_meta(highest, session)
         maxid = meta['maxid']
-        for id, data in meta['comments'].items():
+        for id, data in list(meta['comments'].items()):
             if int(id) > int(highest):
                 highest = id
             all['comments'][id] = data
@@ -162,13 +162,13 @@ def get_bodies_since(highest, maxid, server, session):
     all = {}
     while highest != maxid:
         meta = server.fetch_comment_bodies(highest, session)
-        for id, data in meta.items():
+        for id, data in list(meta.items()):
             if int(id) > int(highest):
                 highest = id
             all[id] = data
-        if meta.has_key(maxid):
+        if maxid in meta:
             break
-        print "Downloaded %d comments so far" % len(all)
+        print("Downloaded %d comments so far" % len(all))
     return all
 
 def __dispatch():
@@ -180,7 +180,7 @@ def __dispatch():
     
     options, args = parser.parse_args(sys.argv[1:])
     if options.config:
-        cp = ConfigParser.SafeConfigParser()
+        cp = configparser.SafeConfigParser()
         cp.read(options.config)
         username = cp.get("login", "username")
         password = cp.get("login", "password")

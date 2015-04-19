@@ -83,7 +83,7 @@ class LJServer:
                 'clientversion': self.clientversion,
                 'auth_method': 'challenge',
                 'auth_challenge': challenge['challenge'],
-                'auth_response': md5((challenge['challenge'] + md5(self.password.encode('ascii')).hexdigest()).encode('ascii')).hexdigest(),
+                'auth_response': md5(challenge['challenge'] + md5(self.password).hexdigest()).hexdigest(),
                 'username': self.user,
                 }
         return args
