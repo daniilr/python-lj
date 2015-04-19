@@ -13,8 +13,8 @@ pip install lj
 ## Usage example ##
 
 ```python
-import lj
-client.LJServer("Python-Blog3/1.0", "http://daniil-r.ru/bots.html; i@daniil-r.ru")
-serv.login("yourusername", "yourpassword")
-serv.postevent("Awesome post", "Awesome subject", props={"taglist": "githgub,livejournal"})
+from lj import lj as _lj
+lj = _lj.LJServer("Python-Blog3/1.0", "http://daniil-r.ru/bots.html; i@daniil-r.ru")
+lj.login("yourusername", "yourpassword")
+lj.postevent("Awesome post", "Awesome subject", props={"taglist": "github,livejournal"})
 ```
