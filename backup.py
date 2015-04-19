@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __revision__ = "$Rev$"
 
@@ -8,7 +8,8 @@ import datetime
 import os.path
 import sys
 from optparse import OptionParser
-from . import lj
+from lj import lj
+
 
 """
 journal backup dictionary structure:
@@ -39,31 +40,37 @@ journal backup dictionary structure:
 """
 
 DEFAULT_JOURNAL = {
-        'last_entry': None,
-        'last_comment': '0',
-        'last_comment_meta': None,
-        'entries': {},
-        'comments': {},
-        'comment_posters': {},
-        }
+    'last_entry': None,
+    'last_comment': '0',
+    'last_comment_meta': None,
+    'entries': {},
+    'comments': {},
+    'comment_posters': {},
+}
+
+
 def datetime_from_string(s):
     """This assumes input in the form '2007-11-19 12:24:01' because that's all I care about"""
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]), int(s[11:13]), int(s[14:16]), int(s[17:19]))
+
+
 def days_ago(s):
     return (datetime.datetime.today() - datetime_from_string(s)).days
+
+
 def one_second_before(s):
     return str(datetime_from_string(s) - datetime.timedelta(seconds=1))
 
-def backup(u,p,f):
+
+def backup(user, password, journal):
     server = lj.LJServer('lj.py+backup; kemayo@gmail.com', 'Python-lj.py/0.0.1')
     try:
-        login = server.login(u, p, getpickws = True, getpickwurls = True)
+        login = server.login(user, password, getpickws=True, getpickwurls=True)
     except lj.LJException as e:
         sys.exit(e)
-    
+
     # Load already-cached entries
-    
-    journal = load_journal(f)
+
     journal['login'] = login
 
     # Sync entries from the server
@@ -73,33 +80,36 @@ def backup(u,p,f):
     # Sync comments from the server
     print("Downloading comments")
     nc = update_journal_comments(server, journal)
-    
-    save_journal(f, journal)
 
     print(("Updated %d entries and %d comments" % (nj, nc)))
 
+
+def backup_to_file(user, password, f):
+    journal = load_journal(f)
+    backup(user, password, journal)
+    save_journal(f, journal)
+
+
 def load_journal(f):
-    #f should be a string referring to a file
+    # f should be a string referring to a file
     if os.path.exists(f):
         try:
-            pickled = open(f, 'rb')
-            j = pickle.load(pickled)
-            pickled.close()
+            j = pickle.load(open(f, 'rb'))
             return j
         except EOFError:
             return DEFAULT_JOURNAL.copy()
     return DEFAULT_JOURNAL.copy()
 
+
 def save_journal(f, journal):
-    pickled = open(f, 'wb')
-    pickle.dump(journal, pickled)
-    pickled.close()
+    pickle.dump(journal, open(f, 'wb'))
+
 
 def update_journal_entries(server, journal):
     syncitems = built_syncitems_list(server, journal)
     howmany = len(syncitems)
     print(howmany, "entries to download")
-    while(len(syncitems) > 0):
+    while len(syncitems) > 0:
         print("getting entries starting at", syncitems[0][1])
         sync = server.getevents_syncitems(one_second_before(syncitems[0][1]))
         for entry in sync['events']:
@@ -108,6 +118,7 @@ def update_journal_entries(server, journal):
             journal['entries'][entry['itemid']] = entry
             del(syncitems[0])
     return howmany
+
 
 def built_syncitems_list(server, journal):
     all = []
@@ -123,6 +134,7 @@ def built_syncitems_list(server, journal):
             journal['last_entry'] = all[-1][1]
     return all
 
+
 def update_journal_comments(server, journal):
     session = server.sessiongenerate()
     initial_meta = get_meta_since(journal['last_comment'], server, session)
@@ -131,11 +143,11 @@ def update_journal_comments(server, journal):
         bodies = get_bodies_since(journal['last_comment'], initial_meta['maxid'], server, session)
         journal['comments'].update(bodies)
     if len(journal['comments']) == 0 or days_ago(journal['last_comment_meta']) > 30:
-        #update metadata every 30 days
+        # update metadata every 30 days
         all_meta = get_meta_since('0', server, session)
         journal['comment_posters'].update(all_meta['usermaps'])
         if len(journal['comments']) > 0:
-            for id,data in list(all_meta['comments'].items()):
+            for id, data in list(all_meta['comments'].items()):
                 journal['comments'][id]['posterid'] = data[0]
                 journal['comments'][id]['state'] = data[1]
         journal['last_comment_meta'] = str(datetime.datetime.today())
@@ -144,9 +156,10 @@ def update_journal_comments(server, journal):
     server.sessionexpire(session)
     return howmany
 
+
 def get_meta_since(highest, server, session):
     all = {'comments': {}, 'usermaps': {}}
-    maxid = str(int(highest)+1)
+    maxid = str(int(highest) + 1)
     while highest < maxid:
         meta = server.fetch_comment_meta(highest, session)
         maxid = meta['maxid']
@@ -157,6 +170,7 @@ def get_meta_since(highest, server, session):
         all['usermaps'].update(meta['usermaps'])
     all['maxid'] = maxid
     return all
+
 
 def get_bodies_since(highest, maxid, server, session):
     all = {}
@@ -171,23 +185,24 @@ def get_bodies_since(highest, maxid, server, session):
         print("Downloaded %d comments so far" % len(all))
     return all
 
+
 def __dispatch():
-    parser = OptionParser(version="%%prog %s" % __revision__, usage = "usage: %prog -u Username -p Password -f backup.pkl")
+    parser = OptionParser(version="%%prog %s" % __revision__, usage="usage: %prog -u Username -p Password -f backup.pkl")
     parser.add_option('-u', dest='user', help="Username")
     parser.add_option('-p', dest='password', help="Password")
     parser.add_option('-f', dest='file', help="Backup filename")
     parser.add_option('-c', dest='config', help="Config file")
-    
+
     options, args = parser.parse_args(sys.argv[1:])
     if options.config:
-        cp = configparser.SafeConfigParser()
+        cp = configparser.ConfigParser()
         cp.read(options.config)
         username = cp.get("login", "username")
         password = cp.get("login", "password")
         filename = cp.get("login", "file")
-        backup(username, password, filename)
+        backup_to_file(username, password, filename)
     elif options.user and options.password and options.file:
-        backup(options.user, options.password, options.file)
+        backup_to_file(options.user, options.password, options.file)
     else:
         parser.error("If a config file is not being used, -u, -p, and -f must all be present.")
 
