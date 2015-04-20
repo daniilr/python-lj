@@ -17,9 +17,7 @@ __license__ = "New BSD"
 
 from hashlib import md5
 import xmlrpc.client
-import urllib.request
-import urllib.error
-import urllib.parse
+import urllib.request, urllib.error, urllib.parse
 import io
 import gzip
 import datetime
@@ -85,9 +83,7 @@ class LJServer:
                 'clientversion': self.clientversion,
                 'auth_method': 'challenge',
                 'auth_challenge': challenge['challenge'],
-                'auth_response': md5(
-                    (challenge['challenge'] + md5(
-                        self.password.encode('ascii')).hexdigest()).encode('ascii')).hexdigest(),
+                'auth_response': md5(challenge['challenge'] + md5(self.password).hexdigest()).hexdigest(),
                 'username': self.user,
                 }
         return args
@@ -187,6 +183,7 @@ class LJServer:
         try:
             response = self.__request('checkfriends', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         self.lastupdate = response['lastupdate']
         return response
@@ -205,11 +202,11 @@ class LJServer:
         try:
             response = self.__request('consolecommand', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
-    def editevent(self, itemid, event, subject=None, e_datetime=None, security=None, allowmask=None, props=None,
-                  usejournal=None, lineendings=None):
+    def editevent(self, itemid, event, subject=None, e_datetime=None, security=None, allowmask=None, props=None, usejournal=None, lineendings=None):
         pass
 
     def editfriendgroups(self, groupmasks, set=None, delete=None):
@@ -237,6 +234,7 @@ class LJServer:
         try:
             response = self.__request('editfriends', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -256,6 +254,7 @@ class LJServer:
         try:
             response = self.__request('friendof', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -290,6 +289,7 @@ class LJServer:
         try:
             response = self.__request('getdaycounts', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -321,6 +321,7 @@ class LJServer:
         try:
             response = self.__request('getevents', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -370,6 +371,7 @@ class LJServer:
         try:
             response = self.__request('getfriends', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -378,6 +380,7 @@ class LJServer:
         try:
             response = self.__request('getfriendgroups', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -434,8 +437,9 @@ class LJServer:
         try:
             response = self.__request('postevent', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
-        return response
+            return response
 
     def sessiongenerate(self, expiration='short', ipfixed=False):
         """Generates a session cookie to use when directly accessing LJ
@@ -452,6 +456,7 @@ class LJServer:
         try:
             response = self.__request('sessiongenerate', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response['ljsession']
 
@@ -472,6 +477,7 @@ class LJServer:
         try:
             response = self.__request('sessionexpire', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return True
 
@@ -498,6 +504,7 @@ class LJServer:
         try:
             response = self.__request('syncitems', arguments)
         except xmlrpc.client.Error as v:
+            response = None
             raise LJException(v)
         return response
 
@@ -508,12 +515,12 @@ class LJServer:
         request = urllib.request.Request(url)
         request.add_header('Accept-encoding', 'gzip')
         request.add_header('User-agent', self.user_agent)
-        request.add_header('Cookie', 'ljsession=' + session)
+        request.add_header('Cookie', 'ljsession='+session)
         response = urllib.request.urlopen(request)
-        data = io.StringIO(response.read().decode('utf8'))
+        data = io.StringIO(response.read())
         response.close()
         if response.headers.get('content-encoding', '') == 'gzip':
-            data = gzip.GzipFile(fileobj=data, mode='w')
+            data = gzip.GzipFile(fileobj=data)
         return data
 
     def fetch_comment_meta(self, startid=0, session=None):
@@ -539,11 +546,11 @@ class LJServer:
 
         LJ encourages you to cache this data, but it can change occasionally.
         """
-        response = self.__request_with_cookie(
-            self.host + "export_comments.bml?get=comment_meta&startid=%d" % int(startid), session)
+        response = self.__request_with_cookie(self.host+"export_comments.bml?get=comment_meta&startid=%d" % int(startid), session)
         d = parse(response).getElementsByTagName('livejournal')[0]
         response.close()
-        data = {'comments': {}, 'usermaps': {}, 'maxid': get_text_from_single(d, 'maxid')}
+        data = {'comments': {}, 'usermaps': {}}
+        data['maxid'] = get_text_from_single(d, 'maxid')
         for comment in d.getElementsByTagName('comment'):
             state = comment.getAttribute('state')
             if state == '':
@@ -576,8 +583,7 @@ class LJServer:
 
         This should be very, very cached.  All information that might change is returned by fetch_comment_meta.
         """
-        response = self.__request_with_cookie(
-            self.host + "export_comments.bml?get=comment_body&startid=%d" % int(startid), session)
+        response = self.__request_with_cookie(self.host+"export_comments.bml?get=comment_body&startid=%d" % int(startid), session)
         d = parse(response).getElementsByTagName('livejournal')[0]
         response.close()
         data = {}
