@@ -8,7 +8,7 @@ import datetime
 import os.path
 import sys
 from optparse import OptionParser
-from lj import lj
+import lj
 
 
 """
