@@ -1,2 +1,4 @@
 *.pyc
 dist/
+env/
+env3/

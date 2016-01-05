@@ -5,6 +5,7 @@ __revision__ = "$Rev$"
 import configparser
 import pickle
 import datetime
+import time
 import os.path
 import sys
 from optparse import OptionParser
@@ -51,7 +52,7 @@ DEFAULT_JOURNAL = {
 
 def datetime_from_string(s):
     """This assumes input in the form '2007-11-19 12:24:01' because that's all I care about"""
-    return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]), int(s[11:13]), int(s[14:16]), int(s[17:19]))
+    return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
 
 
 def days_ago(s):
