@@ -16,10 +16,14 @@ __copyright__ = "Copyright (c) 2004-2007 David Lynch"
 __license__ = "New BSD"
 
 from hashlib import md5
-import xmlrpc.client
-import urllib.request
-import urllib.error
-import urllib.parse
+try:
+    import xmlrpc.client as xmlrpclib
+except ImportError:
+    import xmlrpclib
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 import io
 import gzip
 import datetime
@@ -30,7 +34,7 @@ class LJException(Exception):
     pass
 
 
-class LJTransport(xmlrpc.client.Transport):
+class LJTransport(xmlrpclib.Transport):
     pass
 
 
@@ -54,7 +58,7 @@ class LJServer:
         transport.user_agent = user_agent
         self.user_agent = user_agent
         self.host = host
-        self.server = xmlrpc.client.ServerProxy(
+        self.server = xmlrpclib.ServerProxy(
             host + 'interface/xmlrpc', transport)
         self.clientversion = clientversion
 
@@ -157,7 +161,7 @@ class LJServer:
 
         try:
             response = self.__request('login', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             self.user = None
             self.password = None
             raise LJException(v)
@@ -186,7 +190,7 @@ class LJServer:
             arguments['lastupdate'] = self.lastupdate
         try:
             response = self.__request('checkfriends', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         self.lastupdate = response['lastupdate']
         return response
@@ -204,7 +208,7 @@ class LJServer:
         arguments['commands'] = commands
         try:
             response = self.__request('consolecommand', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -236,7 +240,7 @@ class LJServer:
             arguments['delete'] = friends
         try:
             response = self.__request('editfriends', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -255,7 +259,7 @@ class LJServer:
             arguments['friendoflimit'] = limit
         try:
             response = self.__request('friendof', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -289,7 +293,7 @@ class LJServer:
             arguments['usejournal'] = usejournal
         try:
             response = self.__request('getdaycounts', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -320,7 +324,7 @@ class LJServer:
 
         try:
             response = self.__request('getevents', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -369,7 +373,7 @@ class LJServer:
                 arguments['friendoflimit'] = limit
         try:
             response = self.__request('getfriends', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -377,7 +381,7 @@ class LJServer:
         arguments = self.__headers()
         try:
             response = self.__request('getfriendgroups', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -433,7 +437,7 @@ class LJServer:
             arguments['lineendings'] = lineendings
         try:
             response = self.__request('postevent', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -451,7 +455,7 @@ class LJServer:
             arguments['ipfixed'] = 1
         try:
             response = self.__request('sessiongenerate', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response['ljsession']
 
@@ -471,7 +475,7 @@ class LJServer:
             arguments['expire'] = expire
         try:
             response = self.__request('sessionexpire', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return True
 
@@ -497,7 +501,7 @@ class LJServer:
             arguments['lastsync'] = lastsync
         try:
             response = self.__request('syncitems', arguments)
-        except xmlrpc.client.Error as v:
+        except xmlrpclib.Error as v:
             raise LJException(v)
         return response
 
@@ -505,11 +509,11 @@ class LJServer:
         if not session:
             session = self.sessiongenerate()
 
-        request = urllib.request.Request(url)
+        request = urllib2.Request(url)
         request.add_header('Accept-encoding', 'gzip')
         request.add_header('User-agent', self.user_agent)
         request.add_header('Cookie', 'ljsession=' + session)
-        response = urllib.request.urlopen(request)
+        response = urllib2.urlopen(request)
         data = io.StringIO(response.read().decode('utf8'))
         response.close()
         if response.headers.get('content-encoding', '') == 'gzip':

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 __revision__ = "$Rev$"
-
-import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 import pickle
 import datetime
 import time
