@@ -4,3 +4,5 @@ env/
 env3/
 env2/
 .idea/
+build/
+*.egg-info/
