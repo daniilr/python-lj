@@ -1,6 +1,6 @@
-![Format](https://img.shields.io/pypi/format/lj.svg)
+[![Format](https://img.shields.io/pypi/format/lj.svg)
 ![Versions](https://img.shields.io/pypi/pyversions/lj.svg)
-![Versions](https://img.shields.io/pypi/dm/lj.svg)
+![Versions](https://img.shields.io/pypi/dm/lj.svg)](https://pypi.python.org/pypi/lj/0.2)
 
 # Python LiveJournal #
 **Feel free to make pull requests!**
