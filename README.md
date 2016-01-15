@@ -22,3 +22,7 @@ ljclient = lj.LJServer("Python-Blog3/1.0", "http://daniil-r.ru/bots.html; i@dani
 ljclient.login("yourusername", "yourpassword")
 ljclient.postevent("Awesome post", "Awesome subject", props={"taglist": "github,livejournal"})
 ```
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/daniilr/python-lj/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
