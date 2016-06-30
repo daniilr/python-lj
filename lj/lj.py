@@ -53,7 +53,7 @@ class LJServer:
     All data transmitted should be in UTF-8.  All data received WILL be in UTF-8.
     """
 
-    def __init__(self, clientversion, user_agent, host='http://www.livejournal.com/'):
+    def __init__(self, clientversion, user_agent, host='https://www.livejournal.com/'):
         transport = LJTransport()
         transport.user_agent = user_agent
         self.user_agent = user_agent
