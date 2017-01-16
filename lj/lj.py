@@ -214,7 +214,33 @@ class LJServer:
 
     def editevent(self, itemid, event, subject=None, e_datetime=None, security=None, allowmask=None, props=None,
                   usejournal=None, lineendings=None):
-        pass
+        arguments = self.__headers()
+        arguments['itemid'] = itemid
+        arguments['event'] = event
+        arguments['subject'] = ''
+        arguments['lineendings'] = ''
+        
+        if subject: arguments['subject'] = subject
+        if not e_datetime:
+            e_datetime = datetime.datetime.now()
+        try:
+            arguments['year'] = e_datetime.year
+            arguments['mon'] = e_datetime.month
+            arguments['day'] = e_datetime.day
+            arguments['hour'] = e_datetime.hour
+            arguments['min'] = e_datetime.minute
+        except AttributeError:
+            raise TypeError('e_datetime must be datetime.datetime, or similar')
+        if security: arguments['security']=security
+        if allowmask: arguments['allowmask']=allowmask
+        if props: arguments['props']=props
+        if usejournal: arguments['usejournal']=usejournal
+        if lineendings: arguments['lineendings']=lineendings
+        try:
+        	response = self.__request('editevent', arguments)
+        except xmlrpclib.Error as v:
+            raise LJException(v)
+        return response
 
     def editfriendgroups(self, groupmasks, set=None, delete=None):
         pass
