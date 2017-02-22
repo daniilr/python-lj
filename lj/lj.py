@@ -216,6 +216,15 @@ class LJServer:
                   usejournal=None, lineendings=None):
         pass
 
+    def delevent(self, itemid):
+        arguments = self.__headers()
+        arguments['itemid'] = itemid
+        try:
+            response = self.__request('editevent', arguments)
+        except xmlrpclib.Error as v:
+            raise LJException(v)
+        return response
+
     def editfriendgroups(self, groupmasks, set=None, delete=None):
         pass
 
