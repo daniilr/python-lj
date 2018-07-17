@@ -52,7 +52,7 @@ class LJServer:
     host: server to connect to.  Defaults to the official LiveJournal server.  Note that
         it is assumed everything on this server is in the same location as it is on
         livejournal.com.
-    ssl: Transport/SafeTransport for http/s - needed if using this lib for dreamwidth.org
+    ssl: Transport/SafeTransport for http/s
 
     All data transmitted should be in UTF-8.  All data received WILL be in UTF-8.
     """
