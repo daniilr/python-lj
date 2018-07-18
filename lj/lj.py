@@ -38,8 +38,11 @@ class LJTransport(xmlrpclib.Transport):
     pass
 
 
-class LJServer:
+class LJSafeTransport(xmlrpclib.SafeTransport):
+    pass
 
+
+class LJServer:
     """Main interface class for interactions with servers implementing the LiveJournal XML-RPC interface
 
     clientversion:  the identifier of the client.  This should be a string of the form
@@ -49,17 +52,21 @@ class LJServer:
     host: server to connect to.  Defaults to the official LiveJournal server.  Note that
         it is assumed everything on this server is in the same location as it is on
         livejournal.com.
+    ssl: Transport/SafeTransport for http/s
 
     All data transmitted should be in UTF-8.  All data received WILL be in UTF-8.
     """
 
-    def __init__(self, clientversion, user_agent, host='https://www.livejournal.com/'):
-        transport = LJTransport()
+    def __init__(self, clientversion, user_agent, host='https://www.livejournal.com/', ssl=False):
+        if ssl:
+            transport = LJSafeTransport()
+        else:
+            transport = LJTransport()
+
         transport.user_agent = user_agent
         self.user_agent = user_agent
         self.host = host
-        self.server = xmlrpclib.ServerProxy(
-            host + 'interface/xmlrpc', transport)
+        self.server = xmlrpclib.ServerProxy(host + 'interface/xmlrpc', transport)
         self.clientversion = clientversion
 
         self.user = None
