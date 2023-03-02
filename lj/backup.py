@@ -145,7 +145,9 @@ def update_journal_comments(server, journal):
     if initial_meta['maxid'] > journal['last_comment']:
         bodies = get_bodies_since(journal['last_comment'], initial_meta['maxid'], server, session)
         journal['comments'].update(bodies)
-    if len(journal['comments']) == 0 or days_ago(journal['last_comment_meta']) > 30:
+    if len(journal['comments']) == 0 \
+           or journal['last_comment_meta'] is None \
+           or days_ago(journal['last_comment_meta']) > 30:
         # update metadata every 30 days
         all_meta = get_meta_since('0', server, session)
         journal['comment_posters'].update(all_meta['usermaps'])
